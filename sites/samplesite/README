@@ -1,0 +1,183 @@
+README for making a site in HR.
+
+FILES:
+
+startup.js - The file loaded by Hairy Rhino. This bootstraps everything else.
+
+config.js - Configuration file. The bulk of what it impacts is in startup.js.
+
+init.js - For loading local files not always used in every site.
+
+default - If this file exists, HR will use this site as the default site.
+
+hostrx - This contains the regexp that HR matches against the hostname on
+         a webrequest.
+
+jslib  - .js files crucial for the setup to work, as well as common libraries.
+
+lib - .js files generally only needed by the current site.
+
+public - Everything under this directory is served statically. 'public' is the
+         root, so "public/foo.jpg" can be accessed at http://yoursite/foo.jpg
+         Since I haven't figured out how to get Jetty to be faster with
+         static files (Namely because of caching), I recommend putting public
+         in your http conf or nginx site config: If a file doesn't exist in
+         public/..., then gateway to jsserver.
+
+pages - Every file in here is auto-loaded. If enableRAD is true in config.js,
+        then pages/ is also scanned for new files on every access.
+        check PAGES section below for using them.
+
+queries - Files in here should be SQL queries. The sample 'select_one' query
+          shows the format. If enableRAD is true, it is scanned and queries are
+          reloaded every time.
+          Any file in here creates the function DB.<filename>. As for using
+          it, check SQL below.
+
+templates - Contains all templates. Using render('filename') will look first
+            for templates/<filename> then for templates/<filename>.html
+            Check the TEMPLATES section below for using templates.
+
+PAGES:
+
+The 'Web' object is the handler object that jsserver calls to handle incoming
+connections. While you're free to completely rewrite how it works, here is
+how it works for now:
+
+- Web.handler(path, req, resp) is called by the jsserver.
+- If enableRAD is true, all reload() calls are executed.
+- If Web.requestMangler() is a function, it is called, and may return
+  a new path.
+- If path begins with "/action/", then it is considered an action and will
+  run with callAction, checking for added actions.
+- Otherwise, path is run through the regexps for all added pages. A matching
+  regexp will call the resulting callback with (path, req, resp).
+- The callback may either return the body or set resp.body.
+- If resp.master is set (defaults to Config.defaultTemplate), then the
+  resulting body is then rendered within the 'master' template, passed as
+  'body'.
+
+- If any errors are either called (resp.fourohfour(), resp.error(), ...) then
+  it attempts to render '<errorcode>.html' in the templates/ directory.
+
+Adding pages:
+
+Web.add_page('name', pathrx, function(request, response) { ...});
+
+Defines a page. 'name' is only really useful in enableRAD: Since regexps
+can change while reloading, 'name' identifies the rx+function combo.
+
+Path (with no leading '/'s) is checked against <pathrx>. If it matches, then
+it calls the callback(request,response). Any groups from matching the pathrx
+are saved in request.m. (request.m[1], etc).
+
+Adding actions:
+
+Web.add_action('<name>', function(request, response) {...});
+
+If /action/<name> is accessed, then this is called identical to Web.add_page,
+with some differences:
+
+- method must be POST, not GET.
+- The http referrer (referer) must match Config.referrer_rx.
+
+Otherwise, the response is returned with an unauthorized error.
+
+I also recommend ending action callbacks with resp.redirect('/new/path')
+rather than rendered templates or similar.
+
+Request objects:
+
+req.m: The result of the regexp match against pathrx.
+req.method: 'POST', 'GET', etc.
+req.remoteAddr: The IP address of the remote user. This also checks for
+                'X-Real-IP' in case of using a proxy (e.g: nginx)
+req.referrer: The referring url.
+req.hostname: The actual hostname used to access this page.
+req.header(name): Get the request header.
+req.cookies: An object with [name]: [value]
+req.val(name): If ?foo=bar&foo=baz, then req.val('foo') gets 'bar'.
+req.vals(name): If ?foo=bar&foo=baz, then req.vals('foo') gets ['bar', 'baz']
+
+Response objects:
+
+resp.body: The returned html body.
+resp.headers: {key:val} response headers.
+resp.cookies: {key:[value,opts]} for cookies.
+resp.setCookie(name, value, (opts)). opts is a {key:val} for keys:
+                                     domain, age, path, secure.
+resp.fourohfour(): Returns a not found error.
+resp.error(errobj): Expects a Rhino error (__exception__), and renders
+                    a page detailing the errors.
+resp.unauthorized(): Returns 403 forbidden.
+resp.redirect(url): Redirects the user. Most commonly used after a post.
+                    (in add_action)
+
+SQL:
+
+By default: DBCONN is initialized to an sql connection detailed in Config.js.
+DBCONN.db, which is assigned to the global variable DB, contains all of the
+prepared statements defined by DBCONN.prepare('name', 'query').
+
+You can initialize multiple sql connections: Look at startup.js for how to
+do so. But queries/ directory only deals with DBCONN.
+
+For every file in queries/, jslib/queries.js reads them, removes comment lines,
+and calls DBCONN.prepare(<filename>, <content>).
+
+Comment lines are those that begin with #.
+
+A sample file, queries/select_num exists. This takes one named parameter.
+On load, it is assigned to DB.select_num.
+
+Prepared queries: HR uses named bind variables in prepared statements, but
+you can also use them as positional.
+
+If file 'user_add' contains:
+INSERT INTO users (username, password, email)
+VALUES (:username, MD5(:password), :email)
+
+Then DB.user_add() is called to access that. You have two options here:
+DB.user_add({username: 'foo', password: 'bar', email: 'foo@bar.com'});
+DB.user_add('foo', 'bar', 'foo@bar.com');
+
+For a SELECT, DESCRIBE or SHOW, either will return an array of
+[{colname: val, colname2: val2, ...},row2,...]
+
+Otherwise, an empty array is returned after an update is executed.
+
+To build and pass your own query, you may use:
+
+DB.query(): Returns an array
+DB.update(): Returns an object, {rows: <number of rows affected>, id: <last_insert_id> }
+
+But these aren't used often.
+
+For more, look at jsserver/jslib/sql.js
+
+TEMPLATES:
+
+Templates use a fairly common format:
+
+<% javascript code; %>
+<%= js code that is included in the template. %>
+<%# A comment that's not included in the template. %>
+
+So a common use might be:
+
+<%# colorlist.html
+    This template expects:
+    {colors: [array of strings]}
+#%>
+Colors:
+<ul>
+ <% colors.each(function(color) { %>
+  <li><%= color %></li>
+ <% }); %>
+</ul>
+
+Templates are drawn using render(<filename>, {name:val, name:val}). To use
+the above template, you could use:
+  render('colorlist.html', {colors: ['red', 'green', 'blue']})
+
+To include sub templates: Simply do <%= render('othertemplate', {...}); %>

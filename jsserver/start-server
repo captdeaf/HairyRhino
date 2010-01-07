@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+
+cd `dirname $0`
+
+# Is there any currently running instance?
+# This could probably be improved to only kill
+# the server, but pid tracking doesn't seem to work.
+`pwd`/kill-server
+
+export PATH=/opt/jdk/bin:$PATH
+
+prod=`grep PRODUCTION config.js`
+
+unset LC
+unset LANG
+export LC=en_US.UTF-8
+export LANG=en_US.UTF-8
+cpath="java:jars/js.jar:jars/mysql.jar:jars/postgresql.jar:jars/servlet-api.jar:jars/jetty.jar:jars/jetty-util.jar"
+
+case $prod in
+*true*)
+  echo "Starting server in Production (Optimized) mode..."
+  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 1 bootstrap.js >> log.out 2>&1 &
+  ;;
+*)
+  echo "Starting server in Debug mode..."
+  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 0 -debug bootstrap.js >> log.out 2>&1 &
+  ;;
+esac
+
+childpid=`jobs -p | tail -1 | xargs`
+
+echo $childpid > server.pid

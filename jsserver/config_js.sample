@@ -1,0 +1,9 @@
+/* Listening host + port. */
+var HOST = '0.0.0.0';
+var PORT = 8088;
+
+/* SHould we turn off RAD stuff? (jsload, etc) ? */
+var PRODUCTION = false;
+
+/* Directory containing all the sites. */
+var SITES_DIR = '../sites';

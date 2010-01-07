@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+
+unset LC
+unset LANG
+export LC=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+bn=`dirname $0`
+if [ ! -z "$bn" ] ; then
+  bn="$bn/"
+fi
+cpath="$bn/java"
+for path in jars/* ; do
+  cpath="$cpath:$bn/$path"
+done
+
+
+java -classpath $cpath org.mozilla.javascript.tools.shell.Main $@

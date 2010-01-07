@@ -1,0 +1,8 @@
+Hairy Rhino is a combination of the 'javascript server' (jsserver) and the
+individual sites.
+
+jsserver/ contains Hairy Rhino. You'll need to copy config_js.sample to
+          config.js and edit. (A handy default config.js already exists)
+
+sites/ contain all the separate sites, each in their own directories.
+       jsserver loads each directory within as a separate site.

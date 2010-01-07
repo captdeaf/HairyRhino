@@ -1,0 +1,2 @@
+If this file ('default') exists, then this site is used as the fallback site
+when jsserver is unable to find a matching site using hostrxes.

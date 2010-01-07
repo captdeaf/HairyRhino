@@ -1,0 +1,24 @@
+What's left TODO:
+
+* Per-site logging, rather than all dumped onto log.out.
+
+* Fix file uploads. Right now there's an issue with encoding.
+
+* Make Date+Time easy.
+
+* Timer / cron jobs.
+
+* Add a standard scope library that is created, then cloned.
+  - Add pg.loadExternalFile for extras and stdlib loading.
+  - defClass
+  - jsmark/jsload (With automatic jsreloading).
+  - utils.js
+  - json.js
+  - Ajax-y extras. (AJAJ-y?)
+
+* Figure out how to use Java to speed up the Web.mount'd static file access.
+
+Later:
+* Rewrite main handler in java for speed?
+
+* HTTPS support?
