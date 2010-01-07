@@ -6,3 +6,18 @@ jsserver/ contains Hairy Rhino. You'll need to copy config_js.sample to
 
 sites/ contain all the separate sites, each in their own directories.
        jsserver loads each directory within as a separate site.
+       This is where you'll probably want to poke around the most.
+
+To run:
+
+As is, this should* run nearly out of the box as long as you have java
+installed.
+
+cd jsserver/java
+make # Build the .class files.
+cd ..
+./start-server
+
+Go http://localhost:9999/
+
+(*: I offer no guarantees)
