@@ -6,7 +6,17 @@ cd `dirname $0`
 # Is there any currently running instance?
 # This could probably be improved to only kill
 # the server, but pid tracking doesn't seem to work.
-`pwd`/kill-server
+# `pwd`/kill-server
+
+args=""
+
+if [ -f server.pid ] ; then
+  read serverpid < server.pid
+  if kill -0 $serverpid >/dev/null 2>/dev/null ; then
+    echo "Running older process detected. Will kill when all sites are loaded."
+    args="-kill $serverpid"
+  fi
+fi
 
 export PATH=/opt/jdk/bin:$PATH
 
@@ -21,11 +31,11 @@ cpath="java:jars/js.jar:jars/mysql.jar:jars/postgresql.jar:jars/servlet-api.jar:
 case $prod in
 *true*)
   echo "Starting server in Production (Optimized) mode..."
-  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 1 bootstrap.js >> log.out 2>&1 &
+  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 1 bootstrap.js $args >> log.out 2>&1 &
   ;;
 *)
   echo "Starting server in Debug mode..."
-  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 0 -debug bootstrap.js >> log.out 2>&1 &
+  java -classpath $cpath org.mozilla.javascript.tools.shell.Main -opt 0 -debug bootstrap.js $args >> log.out 2>&1 &
   ;;
 esac
 

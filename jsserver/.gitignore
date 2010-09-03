@@ -1,0 +1,6 @@
+/java/*.class
+sites/*
+server.pid
+config.js
+*.swp
+/log.out

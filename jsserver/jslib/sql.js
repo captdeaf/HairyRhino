@@ -80,6 +80,8 @@ var SQL = defClass({
         } else {
           print("While executing query '" + q.query + "':");
           print("doPQuery Unknown exception?: " + err);
+          throw err;
+         // throw "SQL error: '" + err.message + '" with query: "' + q.query + '"';
         }
       }
     },

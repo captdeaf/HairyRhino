@@ -158,6 +158,20 @@ var Sandbox = defClass({
           this.file[methodname] = wrapFile(methodname);
         }
 
+        this.file.runScript = function() {
+          // Since arguments is not an array, we need to generate a new one.
+          // That's why it's so wacky.
+          var myargs = [];
+
+          // runscript.sh <directory> <commands...>
+          myargs.push('./runscript.sh');
+          myargs.push(me.basedir);
+          for (var i = 0; i < arguments.length; i++) {
+            myargs.push(arguments[i]);
+          }
+          return web.runCommand.apply(runCommand, myargs);
+        }
+
         this.webroot = undefined;
         web.mountRoot = function(path) {
           var p = File.safepath(path);

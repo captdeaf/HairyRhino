@@ -27,13 +27,20 @@ end
 allsites = {}
 
 # Check yesterday
-date = Time.at(Time.now - 86400).to_s.split(/\s+/,4)[0,3].join(' ')
+date = Time.at(Time.now - 72000).to_s.split(/\s+/,4)[0,3].join(' ')
 
 puts "Statistics for: #{date}"
 puts
 puts
 
-allhits = File.readlines(logfile).grep(/^LOG \[#{date}.*?\]/)
+allhits = []
+
+File.open(logfile, 'r') do |fin|
+  while s = fin.gets
+    next unless s =~ /^LOG \[#{date}.*?\]/
+    allhits.push(s)
+  end
+end
 
 allhits.each do |i|
   i.chomp!
@@ -56,7 +63,8 @@ allhits.each do |i|
   end
 end
 
-allsites.each do |dname, hits|
+allsites.keys.sort.each do |dname|
+  hits = allsites[dname]
   # Determine display name.
   allnames = hits.map { |i| i[:fulldomain] }
   displayname = allnames.uniq.sort_by { |i| allnames.select{ |j| i ==  j }.size }[0]
@@ -72,22 +80,22 @@ allsites.each do |dname, hits|
   topurls = allurls.uniq.sort_by { |i| allurls.select{|j| j == i}.size }.reverse
   puts "Total # of unique urls: #{topurls.size}"
 
-  topcount = 10
+  topcount = 20
   if topurls.size < topcount
     topcount = topurls.size
   end
   puts
-  puts "Top #{topcount} urls: (10 max)"
+  puts "Top #{topcount} urls: (20 max)"
   topurls[0,topcount].each do |url|
     puts '  ' + allurls.grep(url).size.to_s.rjust(5) + ' ' + url
   end
 
-  topcount = 10
+  topcount = 20
   if topips.size < topcount
     topcount = topips.size
   end
   puts
-  puts "Top #{topcount} ips: (10 max)"
+  puts "Top #{topcount} ips: (20 max)"
   topips[0,topcount].each do |ip|
     puts '  ' + allips.grep(ip).size.to_s.rjust(5) + ' ' + ipname(ip)
   end
@@ -96,8 +104,8 @@ allsites.each do |dname, hits|
     hits.select { |hit| hit[:ip] == ip }.map { |hit| hit[:url] + ' ' + hit[:args] }.uniq.size
   }.reverse
 
-  topcount = 5
-  if (scrapers.size < 5)
+  topcount = 20
+  if (scrapers.size < topcount)
     topcount = scrapers.size
   end
   puts

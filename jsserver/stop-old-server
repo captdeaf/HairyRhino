@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+
+# Is there any currently running instance?
+# This could probably be improved to only kill
+# the server, but pid tracking doesn't seem to work.
+pid="$1"
+if [ ! -z "$pid" ] ; then
+  for i in 1 2 3 4 5 ; do
+    kill -0 $pid >/dev/null 2>/dev/null || break
+    echo "Killing current processes ..."
+    kill -TERM $pid
+    sleep 0.2
+  done
+fi

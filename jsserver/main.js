@@ -34,6 +34,12 @@ print("loadSandboxes()");
 Server.loadSandboxes();
 print("loadSandboxes() complete");
 
+// Now that we're all loaded up: Kill the old server if it's running.
+if (arguments[0] == '-kill') {
+  print("Killing old running process: pid '" + arguments[1] + "'");
+  runCommand('./stop-old-server', arguments[1]);
+}
+
 Server.start();
 
 print("Started!");

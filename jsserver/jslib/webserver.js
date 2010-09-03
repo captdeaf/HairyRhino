@@ -136,36 +136,40 @@ var WebServer = defClass({
   name: 'WebServer',
 
   construct: function(host,port) {
-    /* Jetty is weird - A 'server' is just a thread pool and message
-     * passer from a connector (which actually does the listening/etc)
-     * to the content. */
-    this.server = new Packages.org.mortbay.jetty.Server();
-    this.connector =
-        new Packages.org.mortbay.jetty.nio.SelectChannelConnector();
+    this.host = host;
+    this.port = port;
 
     this.sandboxes = {};
     this.hostmap = {};
-
-    this.connector.setHost(host);
-    this.connector.setPort(port);
-
-    this.server.setConnectors(
-        [this.connector].toJava(Packages.org.mortbay.jetty.Connector));
-
-    this.handle = this.webHandle;
-    // Needing to convert to/from JS and Java just plain sucks beans.
-    // this.handler = new 
-    //    Packages.org.mortbay.jetty.handler.AbstractHandler(handler);
-    this.handler = new JavaAdapter(Packages.JsHandler,this);
-
-    // Create the context connecting the handler and server
-    // this.context = new Packages.org.mortbay.jetty.handler.ContextHandler({});
-    // this.context.setContextPath('/');
-    // this.context.setHandler(this.handler);
-    this.server.setHandler(this.handler);
   },
 
   methods: {
+    makeServer: function() {
+      /* Jetty is weird - A 'server' is just a thread pool and message
+       * passer from a connector (which actually does the listening/etc)
+       * to the content. */
+      this.server = new Packages.org.mortbay.jetty.Server();
+      this.connector =
+          new Packages.org.mortbay.jetty.nio.SelectChannelConnector();
+
+      this.connector.setHost(this.host);
+      this.connector.setPort(this.port);
+
+      this.server.setConnectors(
+          [this.connector].toJava(Packages.org.mortbay.jetty.Connector));
+
+      this.handle = this.webHandle;
+      // Needing to convert to/from JS and Java just plain sucks beans.
+      // this.handler = new 
+      //    Packages.org.mortbay.jetty.handler.AbstractHandler(handler);
+      this.handler = new JavaAdapter(Packages.JsHandler,this);
+
+      // Create the context connecting the handler and server
+      // this.context = new Packages.org.mortbay.jetty.handler.ContextHandler({});
+      // this.context.setContextPath('/');
+      // this.context.setHandler(this.handler);
+      this.server.setHandler(this.handler);
+    },
     loadSandboxes: function() {
       var me = this;
       var allsites = File.list(SITES_DIR);
@@ -225,6 +229,10 @@ var WebServer = defClass({
     },
 
     start: function() {
+      // Create the web server.
+      this.makeServer();
+
+      // Start it.
       this.server.start();
     },
 
