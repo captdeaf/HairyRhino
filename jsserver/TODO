@@ -16,7 +16,7 @@ What's left TODO:
   - json.js
   - Ajax-y extras. (AJAJ-y?)
 
-* Figure out how to use Java to speed up the Web.mount'd static file access.
+* Figure out how to use Java to speed up the Web.mount'd static file access?
 
 Later:
 * Rewrite main handler in java for speed?
