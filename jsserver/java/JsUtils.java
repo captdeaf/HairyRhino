@@ -26,6 +26,80 @@ import org.mortbay.util.StringUtil;
 import org.mortbay.util.TypeUtil;
 
 public class JsUtils {
+  public static String inspectJSON(String source) {
+    byte allBytes[] = source.getBytes();
+    byte toHex[] = new byte[]{'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+    int len = 0;
+    for (int i = 0; i < allBytes.length; i++) {
+      switch (allBytes[i]) {
+      case 0x00:
+      case 0x01:
+      case 0x02:
+      case 0x03:
+      case 0x04:
+      case 0x05:
+      case 0x06:
+      case 0x07:
+      case 0x0b:
+      case 0x0e:
+      case 0x0f:
+        len += 4; // \x##
+        break;
+      case '\b':
+      case '\t':
+      case '\n':
+      case '\r':
+      case '\f':
+      case '"':
+      case '\\':
+        len += 2; // \" or \\
+        break;
+      default:
+        len++;
+      }
+    }
+    // Now generate the escaped string
+    byte newBytes[] = new byte[len];
+    len = 0;
+    for (int i = 0; i < allBytes.length; i++) {
+      switch (allBytes[i]) {
+      case 0x00:
+      case 0x01:
+      case 0x02:
+      case 0x03:
+      case 0x04:
+      case 0x05:
+      case 0x06:
+      case 0x07:
+      case 0x0b:
+      case 0x0e:
+      case 0x0f:
+        newBytes[len++] = '\\';
+        newBytes[len++] = 'x';
+        newBytes[len++] = toHex[allBytes[i] & 0xF0 >> 4];
+        newBytes[len++] = toHex[allBytes[i] & 0x0F >> 4];
+        break;
+      case '\b':  
+        newBytes[len++] += '\\'; newBytes[len++] += 'b'; break;
+      case '\t':
+        newBytes[len++] += '\\'; newBytes[len++] += 't'; break;
+      case '\n':
+        newBytes[len++] += '\\'; newBytes[len++] += 'n'; break;
+      case '\r':
+        newBytes[len++] += '\\'; newBytes[len++] += 'r'; break;
+      case '\f':
+        newBytes[len++] += '\\'; newBytes[len++] += 'f'; break;
+      case '"':
+        newBytes[len++] += '\\'; newBytes[len++] += '"'; break;
+      case '\\':
+        newBytes[len++] += '\\'; newBytes[len++] += '\\'; break;
+      default:
+        newBytes[len++] = allBytes[i];
+      }
+    }
+    return new String(newBytes, 0, len);
+  }
+
   public static String readBinaryFile(String filename) {
     try {
       File fn = new File(filename);
