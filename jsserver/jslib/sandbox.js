@@ -92,6 +92,9 @@ var Sandbox = defClass({
       web.readUrl = readUrl;
       web.sql = SQL;
       web.print = this.log;
+      web.inspectJSON = function(str) {
+        return Packages.JsUtils.inspectJSON(str);
+      }
 
       if (this.args.basedir) {
         this.basedir = this.args.basedir;

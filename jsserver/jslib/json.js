@@ -81,6 +81,7 @@ var JSON = (function() {
                 return 'null';
             },
             string: function(x) {
+                /*
                 if (/["\\\x00-\x1f]/.test(x)) {
                     x = x.replace(/([\x00-\x1f\\"])/g, function(a, b) {
                         var c = m[b];
@@ -93,7 +94,8 @@ var JSON = (function() {
                             (c % 16).toString(16);
                     });
                 }
-                return '"' + x + '"';
+                */
+                return '"' + Packages.JsUtils.inspectJSON(x) + '"';
             }
         };
 	

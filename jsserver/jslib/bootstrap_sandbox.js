@@ -1,8 +1,5 @@
 var XMLHttpRequest = Thread.XMLHttpRequest;
 
-/*
-TODO: A better wrapper around this type of stuff.
-
 java = undefined;
 Packages = undefined;
 java = undefined;
@@ -19,7 +16,6 @@ XML = undefined;
 XMLList = undefined;
 Namespace = undefined;
 QName = undefined;
-*/
 
 // SQL
 var SQL = Web.sql;

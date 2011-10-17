@@ -1,6 +1,25 @@
 #!/usr/bin/ruby
 #
 
+def glob2rx(pattern)
+  str, comment = pattern.split(/\s/,2)
+  x = '^' + str.gsub(/[\]\[\.\\\?\(\)\|]/) { |i| '\\' + i }.gsub(/\*/,'.*') + '$'
+  Regexp.new(x)
+end
+
+$ignorepatterns = []
+ignorefile = File.join(File.dirname($0), 'knowncrawlers.txt')
+if File.exists?(ignorefile)
+  IO.readlines(ignorefile).each do |line|
+    line.chomp!
+    $ignorepatterns.push(glob2rx(line))
+  end
+end
+
+def ignore?(ip)
+  return $ignorepatterns.select { |i| ip =~ i }.any?
+end
+
 logfile=File.dirname($0) + '/log.out'
 
 unless File.exists?(logfile)
@@ -28,6 +47,8 @@ allsites = {}
 
 # Check yesterday
 date = Time.at(Time.now - 72000).to_s.split(/\s+/,4)[0,3].join(' ')
+# Or check today
+# date = Time.at(Time.now).to_s.split(/\s+/,4)[0,3].join(' ')
 
 puts "Statistics for: #{date}"
 puts
@@ -46,7 +67,8 @@ allhits.each do |i|
   i.chomp!
   if (i =~ /LOG \[(.*?)\] (\d+\.\d+\.\d+\.\d+):(.+): (\{.*?\})$/)
     datetime, ip, url, args = $1, $2, $3, $4
-    url =~ /https?:\/\/((?:\w+\.)?(\w+\.\w+)\.*)\//
+    next if ignore?(ip)
+    url =~ /https?:\/\/((?:\w+\.)*(\w+\.\w+)\.*)\// or next
     fulldomain = $1.downcase
     domain = $2.downcase
     allsites[domain] ||= []

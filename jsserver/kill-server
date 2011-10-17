@@ -7,6 +7,10 @@
 if [ -f server.pid ] ; then
   me=`whoami`
   read pid < server.pid
+  if [ -z "$pid" ] ; then
+    echo "No processes to kill."
+    exit
+  fi
   for i in 1 2 3 4 5 ; do
     plist=`pgrep -u $me java | grep $pid`
     [ -z "$plist" ] && break

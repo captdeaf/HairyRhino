@@ -2,24 +2,28 @@ jsload('jslib/utils.js');
 jsload('jslib/webresponse.js');
 jsload('jslib/json.js');
 
-var logvisit = function(wreq, hostname, path) {
-  var pvals = wreq.getParameters().map(function(pname) {
-    return pname + ": " + JSON.stringify(wreq.val(pname));
-  }).join(', ');
-  var referrer = wreq.referrer;
-  if (!referrer) {
-    referrer = 'direct';
+// config.js may already define a logvisit.
+var logvisit;
+if (logvisit == undefined) {
+  logvisit = function(wreq, hostname, path) {
+    var pvals = wreq.getParameters().map(function(pname) {
+      return pname + ": " + JSON.stringify(wreq.val(pname));
+    }).join(', ');
+    var referrer = wreq.referrer;
+    if (!referrer) {
+      referrer = 'direct';
+    }
+    print('LOGREF [' + (new Date()) + '] ' + // Time
+          wreq.remoteAddr + ':' +  // Remote IP address.
+          'http://' + hostname + path + // Host+path
+          ' ' + referrer // Referrer
+          );
+    print('LOG [' + (new Date()) + '] ' + // Time
+          wreq.remoteAddr + ':' +  // Remote IP address.
+          'http://' + hostname + path + // Host+path
+          ': {' + pvals + '}' // Parameter values.
+          );
   }
-  print('LOGREF [' + (new Date()) + '] ' + // Time
-        wreq.remoteAddr + ':' +  // Remote IP address.
-        'http://' + hostname + path + // Host+path
-        ' ' + referrer // Referrer
-        );
-  print('LOG [' + (new Date()) + '] ' + // Time
-        wreq.remoteAddr + ':' +  // Remote IP address.
-        'http://' + hostname + path + // Host+path
-        ': {' + pvals + '}' // Parameter values.
-        );
 }
 
 var WebRequest = defClass({

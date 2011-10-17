@@ -39,6 +39,4 @@ case $prod in
   ;;
 esac
 
-childpid=`jobs -p | tail -1 | xargs`
-
-echo $childpid > server.pid
+echo $! > server.pid

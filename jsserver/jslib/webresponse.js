@@ -31,12 +31,22 @@ var WebResponse = defClass({
         s.push('' + key + ': ' + err[key]);
       }
       this.error = err;
-      this.body = 'Error: ' + err + '\n' +  s.join("\n");
+      if (PRODUCTION) {
+        this.body = 'Error: ' + err + '\n' +  s.join("\n");
+      } else {
+        this.body = 'Error 500';
+      }
     },
 
     unauthorized: function() {
       this.status = 403;
       this.body = "403 Forbidden.";
+    },
+
+    permanentredirect: function(url) {
+      this.headers.location = url;
+      this.status = 301;
+      this.body = 'Redirecting to: ' + url;
     },
 
     redirect: function(url) {

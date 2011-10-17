@@ -17,9 +17,6 @@ jsload('jslib/sql.js');
 // Webserver.
 jsload('jslib/webserver.js');
 
-// Visit logger
-jsload('visitlogger.js');
-
 // Templates for the sandboxes.
 jsload('jslib/templates.js');
 
